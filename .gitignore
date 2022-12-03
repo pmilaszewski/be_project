@@ -23,3 +23,7 @@ admin-dev/import/
 download/
 img/
 upload/
+
+
+*.venv/
+*.mypy_cache/
