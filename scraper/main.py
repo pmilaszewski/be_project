@@ -1,4 +1,5 @@
 import requests as r
+import shutil
 import json
 
 import pickle
@@ -56,6 +57,31 @@ def load_from_file():
     pickle_off = open("products.json", 'rb')
     return pickle.load(pickle_off)
 
+def get_image(image_path):
+    image_id = image_path.split(".")[0]
+    image_type = image_path.split(".")[1]
+
+    while True:
+        try:
+            response = r.get(f"https://sklep.argon-lampy.pl/environment/cache/images/500_500_productGfx_{image_id}/*.{image_type}", stream = True)
+            if response.status_code == 200:
+                with open(f"img/{image_path}",'wb') as f:
+                    shutil.copyfileobj(response.raw, f)
+            else:
+                print("Image error")
+            return
+        except r.exceptions.SSLError:
+            pass
+
+def get_products_images(products_list):
+    for idx, product in enumerate(products_list):
+        print(idx)
+        try:
+            for file_name in product['images_filename']:
+                get_image(file_name)
+        except (IndexError, KeyError):
+            print("No images")
+
 
 def main():
     # print(get_all_products_ids(get_number_of_product_pages()))
@@ -64,8 +90,9 @@ def main():
     # save_to_file(products_list)
     products_list = load_from_file()
 
-    print(len(products_list))
+    print(products_list)
 
+    get_products_images(products_list)
 
 
 if __name__ == "__main__":
